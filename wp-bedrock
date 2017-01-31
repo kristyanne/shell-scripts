@@ -31,31 +31,48 @@ echo "\n"
 echo "Directory/Project Name: (hyphenated please!)"
 read PROJECT_NAME
 
+# Get the title of the project.
+echo "\n"
+echo "Project Title:"
+read PROJECT_TITLE
+
+# Get the descrption of the project (so we can replace 'just another wordpress site').
+echo "\n"
+echo "Project Description:"
+read PROJECT_DESCRIPTION
+
 # Create a new Bedrock project using Composer.
+echo "\n"
+echo "${PINK}Downloading Bedrock...${NC}"
+echo "\n"
 composer create-project roots/bedrock $PROJECT_NAME
 
 # Display installation complete message.
 echo "\n"
-echo "${PINK}Bedrock Installation Complete!${NC}"
+echo "${PINK}Bedrock Download Complete!${NC}"
 
 # Get some database details.
 echo "\n"
 echo "${PINK}Starting Database Setup...${NC}"
 echo "\n"
 
-echo "Database Name: "
+echo "Database Name:"
 read DB_NAME
 
 # Connect to mysql and create a database.
 echo "\n"
 echo "${PINK}Connecting to mysql and creating database...${NC}"
-mysql --user=$DB_USER --password=$DB_PASS --execute="create database $DB_NAME"
+
+mysql --user=$DB_USER --password=$DB_PASS --execute="create database ${DB_NAME}"
+
+echo "${PINK}Database setup complete.${NC}"
 
 # Move into the project directory we've just created.
 cd $PROJECT_NAME
 
 # Copy the example .env.example file to create a new .env file for the project.
-echo "${PINK}Configuring Project...${NC}"
+echo "\n"
+echo "${PINK}Configuring Environment Settings...${NC}"
 cp .env.example env.txt
 
 sed -i '' "s/DB_NAME=database_name/DB_NAME=${DB_NAME}/" env.txt
@@ -66,10 +83,29 @@ sed -i '' "s/WP_HOME=http:\/\/example.com/WP_HOME=http:\/\/${PROJECT_NAME}.dev/"
 
 mv env.txt .env
 
+# Wordpress Core Install.
+echo "${PINK}Installing Wordpress...${NC}"
+wp core install --url="${PROJECT_NAME}.dev" --title="${PROJECT_TITLE}" --admin_user="admin" --admin_password="password" --admin_email="kristy.walters@connect-group.com"
+
+# Create a home and blog page, because why not.
+echo "${PINK}Configuring Wordpress...${NC}"
+PAGE_ID_HOME=`wp post create --post_type=page --post_title='Home' --post_content='This is a home page.' --post_status='publish' --porcelain`
+PAGE_ID_BLOG=`wp post create --post_type=page --post_title='Blog' --post_content='This is a blog index page.' --post_status='publish' --porcelain`
+
+# Update some default options
+wp option update show_on_front 'page'
+wp option update page_on_front ${PAGE_ID_HOME}
+wp option update page_for_posts ${PAGE_ID_BLOG}
+wp option update blogdescription "${PROJECT_DESCRIPTION}"
+
+
 # Finished! Display a message.
 echo "\n"
-echo "${PINK}Complete!${NC}"
+echo "${PINK}Complete!"
 echo "\n"
-echo "${PINK}1) Don't forget to update the salts in the .env file!"
-echo "2) Start Wordpress setup: http://${PROJECT_NAME}.dev"
+echo "* Don't forget to update the salts in the .env file!"
+echo "\n"
+echo "URLS:"
+echo "Site: http://${PROJECT_NAME}.dev"
+echo "Admin: http://${PROJECT_NAME}.dev/wp/wp-admin"
 
