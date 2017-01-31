@@ -1,0 +1,59 @@
+#!/bin/sh
+clear
+
+# Required dependencies.
+# WP-CLI: http://wp-cli.org/
+
+# Colours.
+BLUE='\x1B[0;34m';
+GREEN='\x1B[0;32m';
+RED='\x1B[0;31m';
+NC='\x1B[0m';
+
+# Database information
+DB_USER="root"
+DB_PASS="tl6RgH4DDHktCFcp"
+DB_HOST="127.0.0.1"
+
+echo "${GREEN}Starting a new Wordpress project.${NC}"
+echo "\n\n"
+
+# Get the name of the project.
+echo "Project Name: "
+read project_name
+
+# Create the directory for the project and cd into it.
+mkdir $project_name
+cd $project_name
+mkdir www
+cd www
+
+# Download Wordpress and unzip.
+# echo "\n\n"
+# echo "${GREEN}Downloading the latest version of Wordpress...${NC}"
+# echo "\n\n"
+# wp core download
+
+# Get some database details for the project.
+echo "${GREEN}Database Setup${NC}"
+echo "\n\n"
+
+echo "Database Name: "
+read database_name
+
+# Connect to mysql and create a database.
+echo "${GREEN}Connecting to mysql and creating database...${NC}"
+echo "\n\n"
+mysql --user=$DB_USER --password=$DB_PASS --execute="create database $database_name"
+
+# Configuring Wordpress
+echo "${GREEN}Configuring Wordpress...${NC}"
+
+# Create a config directory for multi-env config.
+mdkir config
+
+
+
+
+
+

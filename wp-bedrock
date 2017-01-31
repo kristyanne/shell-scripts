@@ -1,0 +1,75 @@
+#!/bin/sh
+clear
+
+# Start a new Bedrock project for Wordpress
+# https://roots.io/bedrock
+#
+# Required dependencies:
+#
+# 1) Composer:
+#    https://getcomposer.org/doc/00-intro.md#installation-linux-unix-osx
+#
+# 2) PHP >= 5.6
+
+# Colours.
+BLUE='\x1B[0;34m';
+GREEN='\x1B[0;32m';
+RED='\x1B[0;31m';
+PINK='\x1B[0;35m';
+NC='\x1B[0m';
+
+# Database Information
+DB_USER="root"
+DB_PASS="tl6RgH4DDHktCFcp"
+DB_HOST="127.0.0.1"
+
+# Intro.
+echo "${PINK}Starting a new Wordpress project using Bedrock.${NC}"
+echo "\n"
+
+# Get the name of the project.
+echo "Directory/Project Name: (hyphenated please!)"
+read PROJECT_NAME
+
+# Create a new Bedrock project using Composer.
+composer create-project roots/bedrock $PROJECT_NAME
+
+# Display installation complete message.
+echo "\n"
+echo "${PINK}Bedrock Installation Complete!${NC}"
+
+# Get some database details.
+echo "\n"
+echo "${PINK}Starting Database Setup...${NC}"
+echo "\n"
+
+echo "Database Name: "
+read DB_NAME
+
+# Connect to mysql and create a database.
+echo "\n"
+echo "${PINK}Connecting to mysql and creating database...${NC}"
+mysql --user=$DB_USER --password=$DB_PASS --execute="create database $DB_NAME"
+
+# Move into the project directory we've just created.
+cd $PROJECT_NAME
+
+# Copy the example .env.example file to create a new .env file for the project.
+echo "${PINK}Configuring Project...${NC}"
+cp .env.example env.txt
+
+sed -i '' "s/DB_NAME=database_name/DB_NAME=${DB_NAME}/" env.txt
+sed -i '' "s/DB_USER=database_user/DB_USER=${DB_USER}/" env.txt
+sed -i '' "s/DB_PASSWORD=database_password/DB_PASSWORD=${DB_PASS}/" env.txt
+sed -i '' "s/# DB_HOST=localhost/DB_HOST=${DB_HOST}/" env.txt
+sed -i '' "s/WP_HOME=http:\/\/example.com/WP_HOME=http:\/\/${PROJECT_NAME}.dev/" env.txt
+
+mv env.txt .env
+
+# Finished! Display a message.
+echo "\n"
+echo "${PINK}Complete!${NC}"
+echo "\n"
+echo "${PINK}1) Don't forget to update the salts in the .env file!"
+echo "2) Start Wordpress setup: http://${PROJECT_NAME}.dev"
+
