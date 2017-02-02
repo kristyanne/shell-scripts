@@ -24,22 +24,35 @@ DB_PASS="tl6RgH4DDHktCFcp"
 DB_HOST="127.0.0.1"
 
 # Intro.
-echo "${PINK}Starting a new Wordpress project using Bedrock.${NC}"
+echo "${PINK}================================================================="
+echo "Starting a New Wordpress (Bedrock) Project"
+echo "=================================================================${NC}"
+
 echo "\n"
 
 # Get the name of the project.
-echo "Directory/Project Name: (hyphenated please!)"
+echo "${BLUE}Directory/Project Name: (e.g. new-project-name)${NC}"
 read PROJECT_NAME
 
 # Get the title of the project.
-echo "\n"
-echo "Project Title:"
+echo ""
+echo "${BLUE}Project Title:${NC}"
 read PROJECT_TITLE
 
 # Get the descrption of the project (so we can replace 'just another wordpress site').
-echo "\n"
-echo "Project Description:"
+echo ""
+echo "${BLUE}Project Description:${NC}"
 read PROJECT_DESCRIPTION
+
+# Add a simple yes/no confirmation before we proceed
+echo "\n"
+echo "Run Install? (y/n)"
+read -e run
+
+# If the user said yes, continue.
+if [ "$run" == n ] ; then
+exit
+else
 
 # Create a new Bedrock project using Composer.
 echo "\n"
@@ -56,7 +69,7 @@ echo "\n"
 echo "${PINK}Starting Database Setup...${NC}"
 echo "\n"
 
-echo "Database Name:"
+echo "${BLUE}Database Name:${NC}"
 read DB_NAME
 
 # Connect to mysql and create a database.
@@ -83,6 +96,17 @@ sed -i '' "s/WP_HOME=http:\/\/example.com/WP_HOME=http:\/\/${PROJECT_NAME}.dev/"
 
 mv env.txt .env
 
+# Move into the /web directory and create a .htaccess file
+# and move back out again (do I need to do that?)
+cd web
+touch .htaccess
+cd ../
+
+# Update permissions on the directory so that WP can write to them.
+echo "${PINK}Updating /web dir permissions...${NC}"
+sudo chown -R _www web
+sudo chmod -R g+w web
+
 # Wordpress Core Install.
 echo "${PINK}Installing Wordpress...${NC}"
 wp core install --url="${PROJECT_NAME}.dev" --title="${PROJECT_TITLE}" --admin_user="admin" --admin_password="password" --admin_email="kristy.walters@connect-group.com"
@@ -97,15 +121,23 @@ wp option update show_on_front 'page'
 wp option update page_on_front ${PAGE_ID_HOME}
 wp option update page_for_posts ${PAGE_ID_BLOG}
 wp option update blogdescription "${PROJECT_DESCRIPTION}"
-
+# wp rewrite structure '/%postname%' --hard
 
 # Finished! Display a message.
 echo "\n"
-echo "${PINK}Complete!"
-echo "\n"
-echo "* Don't forget to update the salts in the .env file!"
-echo "\n"
+echo "${PINK}================================================================="
+echo "Installation Complete!"
+echo ""
+echo "TODO:"
+echo "1) Update the salts in the .env file."
+echo "2) Update the permalink settings in settings -> permalinks"
+echo ""
 echo "URLS:"
 echo "Site: http://${PROJECT_NAME}.dev"
 echo "Admin: http://${PROJECT_NAME}.dev/wp/wp-admin"
+echo ""
+echo "================================================================="
 
+/usr/bin/open -a "/Applications/Google Chrome.app" "http://${PROJECT_NAME}.dev"
+
+fi
