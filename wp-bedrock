@@ -1,7 +1,7 @@
 #!/bin/sh
 clear
 
-# Start a new Bedrock project for Wordpress
+# Downloads, installs and configures a new Wordpress project using Bedrock.
 # https://roots.io/bedrock
 #
 # Required dependencies:
@@ -10,6 +10,8 @@ clear
 #    https://getcomposer.org/doc/00-intro.md#installation-linux-unix-osx
 #
 # 2) PHP >= 5.6
+#
+# 3) MySQL
 
 # Colours.
 BLUE='\x1B[0;34m';
@@ -18,10 +20,11 @@ RED='\x1B[0;31m';
 PINK='\x1B[0;35m';
 NC='\x1B[0m';
 
-# Database Information
-DB_USER="root"
-DB_PASS="tl6RgH4DDHktCFcp"
+# Database Information.
 DB_HOST="127.0.0.1"
+
+# Move into the php sites directory.
+cd ~/Sites/__php/sites
 
 # Intro.
 echo "${PINK}================================================================="
@@ -44,6 +47,7 @@ echo ""
 echo "${BLUE}Project Description:${NC}"
 read PROJECT_DESCRIPTION
 
+
 # Add a simple yes/no confirmation before we proceed
 echo "\n"
 echo "Run Install? (y/n)"
@@ -56,36 +60,61 @@ else
 
 # Create a new Bedrock project using Composer.
 echo "\n"
-echo "${PINK}Downloading Bedrock...${NC}"
+echo "${PINK}-------------------------------------"
+echo "Downloading Bedrock"
+echo "-------------------------------------${NC}"
+echo ""
+echo "Please wait, this can take a few seconds."
 echo "\n"
+
 composer create-project roots/bedrock $PROJECT_NAME
 
 # Display installation complete message.
 echo "\n"
-echo "${PINK}Bedrock Download Complete!${NC}"
+echo "Download Complete!"
 
 # Get some database details.
 echo "\n"
-echo "${PINK}Starting Database Setup...${NC}"
+echo "${PINK}-------------------------------------"
+echo "Database Setup"
+echo "-------------------------------------${NC}"
+echo ""
+echo "Please enter the project database details."
 echo "\n"
 
+# Get Database Name
 echo "${BLUE}Database Name:${NC}"
 read DB_NAME
 
+# Get Database Username
+echo ""
+echo "${BLUE}Database Username:${NC}"
+read DB_USER
+
+# Get Database Password
+echo ""
+echo "${BLUE}Database Password:${NC}"
+read DB_PASS
+
 # Connect to mysql and create a database.
-echo "\n"
-echo "${PINK}Connecting to mysql and creating database...${NC}"
+echo ""
+echo "- Connecting to mysql and creating database..."
 
 mysql --user=$DB_USER --password=$DB_PASS --execute="create database ${DB_NAME}"
 
-echo "${PINK}Database setup complete.${NC}"
+echo "- Database setup complete."
 
 # Move into the project directory we've just created.
 cd $PROJECT_NAME
 
 # Copy the example .env.example file to create a new .env file for the project.
 echo "\n"
-echo "${PINK}Configuring Environment Settings...${NC}"
+echo "${PINK}-----------------------------------------------"
+echo "Configure Environment and Install Wordpress"
+echo "-----------------------------------------------${NC}"
+echo "\n"
+echo "- Creating .env file for local development."
+
 cp .env.example env.txt
 
 sed -i '' "s/DB_NAME=database_name/DB_NAME=${DB_NAME}/" env.txt
@@ -103,16 +132,16 @@ touch .htaccess
 cd ../
 
 # Update permissions on the directory so that WP can write to them.
-echo "${PINK}Updating /web dir permissions...${NC}"
+echo "- Updating directory permissions."
 sudo chown -R _www web
 sudo chmod -R g+w web
 
 # Wordpress Core Install.
-echo "${PINK}Installing Wordpress...${NC}"
+echo "- Installing Wordpress."
 wp core install --url="${PROJECT_NAME}.dev" --title="${PROJECT_TITLE}" --admin_user="admin" --admin_password="password" --admin_email="kristy.walters@connect-group.com"
 
 # Create a home and blog page, because why not.
-echo "${PINK}Configuring Wordpress...${NC}"
+echo "- Configuring Wordpress."
 PAGE_ID_HOME=`wp post create --post_type=page --post_title='Home' --post_content='This is a home page.' --post_status='publish' --porcelain`
 PAGE_ID_BLOG=`wp post create --post_type=page --post_title='Blog' --post_content='This is a blog index page.' --post_status='publish' --porcelain`
 
