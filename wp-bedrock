@@ -137,6 +137,7 @@ sudo chown -R _www web
 sudo chmod -R g+w web
 
 # Wordpress Core Install.
+echo ""
 echo "- Installing Wordpress."
 wp core install --url="${PROJECT_NAME}.dev" --title="${PROJECT_TITLE}" --admin_user="admin" --admin_password="password" --admin_email="kristy.walters@connect-group.com"
 
@@ -152,6 +153,39 @@ wp option update page_for_posts ${PAGE_ID_BLOG}
 wp option update blogdescription "${PROJECT_DESCRIPTION}"
 # wp rewrite structure '/%postname%' --hard
 
+
+# Download and use the connectwp starter theme
+echo "\n"
+echo "${PINK}-----------------------------------------------"
+echo "Configuring Theme and Plugins"
+echo "-----------------------------------------------${NC}"
+echo "\n"
+
+# Activate the connect starter theme.
+echo "- Fetch and activate the connect starter theme"
+git clone git@bitbucket.org:connectgroup/connect-wordpress-starter-theme.git web/app/themes/connectwp
+wp theme activate connectwp
+
+# Install some plugin dependencies
+
+# ACF (https://www.advancedcustomfields.com/)
+echo "- Installing ACF plugin."
+composer require wpackagist-plugin/advanced-custom-fields
+wp plugin activate advanced-custom-fields
+
+# Create a navigation menu.
+echo "- Creating main navigation menu."
+wp menu create "Main Navigation"
+wp menu list
+
+# Assign the new nav above 'main-navigation' menu to the 'main_navigation' location
+# in the connectwp theme.
+wp menu location assign main-navigation main_navigation
+
+# Add the homepage to the new menu.
+wp menu item add-post main-navigation ${PAGE_ID_HOME} --title="Home"
+
+
 # Finished! Display a message.
 echo "\n"
 echo "${PINK}================================================================="
@@ -165,6 +199,9 @@ echo "URLS:"
 echo "Site: http://${PROJECT_NAME}.dev"
 echo "Admin: http://${PROJECT_NAME}.dev/wp/wp-admin"
 echo ""
+echo "WP LOGIN:"
+echo "Username: admin"
+echo "Password: password"
 echo "================================================================="
 
 /usr/bin/open -a "/Applications/Google Chrome.app" "http://${PROJECT_NAME}.dev"
